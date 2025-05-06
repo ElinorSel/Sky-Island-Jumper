@@ -6,6 +6,9 @@ public class S_Player : MonoBehaviour
 {
     //initilize variables
     private Rigidbody playerRB;
+    public GameObject playerPrefab;
+
+    public ParticleSystem dirtParticle; //TODO: particle play when run
     public float jumpForce;
     public float movementForce = 1.5f;
     private PlayerInputActions inputActions;
@@ -17,12 +20,15 @@ public class S_Player : MonoBehaviour
     public float boostForce = 1.1f;
 
     public float staminaLoss = 20.0f;
+    public int deathCount = 0;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         //Get player components
         playerRB = GetComponent<Rigidbody>();
+
+
     }
 
     private void Awake()
@@ -52,7 +58,17 @@ public class S_Player : MonoBehaviour
             jumpCount = 0;
             grounded = true;
         }
+
     }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.CompareTag("Death"))
+        {
+            Respawn();
+        }
+    }
+
     void OnCollisionExit(Collision other)
     {
         if (other.gameObject.CompareTag("Ground"))
@@ -74,8 +90,8 @@ public class S_Player : MonoBehaviour
             Quaternion targetRotation = Quaternion.LookRotation(direction);
             float rotationSpeed = 15f; // adjust this value for faster/slower rotation
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
-        }
 
+        }
 
         // Jump (spacebar input)
         if (Keyboard.current.spaceKey.wasPressedThisFrame && (jumpCount < allowedJumps))
@@ -108,8 +124,13 @@ public class S_Player : MonoBehaviour
         {
             playerRB.AddForce(direction * boostForce, ForceMode.Impulse);
             stamina -= staminaLoss * Time.deltaTime;
-            Debug.Log("shift press!");
         }
+    }
+
+    void Respawn()
+    {
+        deathCount++; //TODO: connect this so it shows in the UI
+        transform.position = new Vector3(0, 0, 0);
     }
 
 }
