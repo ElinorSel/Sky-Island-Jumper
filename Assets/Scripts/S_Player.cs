@@ -17,8 +17,6 @@ public class S_Player : MonoBehaviour
     public float boostForce = 1.1f;
 
     public float staminaLoss = 20.0f;
-    float tiltAngle = 60.0f;
-    float smooth = 5.0f;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -70,8 +68,14 @@ public class S_Player : MonoBehaviour
 
         Vector3 direction = new Vector3(moveInput.x, 0, moveInput.y);
 
-        //rotate player?
-        transform.rotation = Quaternion.LookRotation(direction);
+        //rotate player if there is input
+        if (direction.magnitude > 0)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            float rotationSpeed = 15f; // adjust this value for faster/slower rotation
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
+        }
+
 
         // Jump (spacebar input)
         if (Keyboard.current.spaceKey.wasPressedThisFrame && (jumpCount < allowedJumps))
