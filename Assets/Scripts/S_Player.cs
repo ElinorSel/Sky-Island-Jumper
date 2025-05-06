@@ -17,6 +17,8 @@ public class S_Player : MonoBehaviour
     public float boostForce = 1.1f;
 
     public float staminaLoss = 20.0f;
+    float tiltAngle = 60.0f;
+    float smooth = 5.0f;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -42,6 +44,7 @@ public class S_Player : MonoBehaviour
     {
         PlayerMovement();
         Debug.Log(stamina);
+
     }
 
     void OnCollisionEnter(Collision other)
@@ -66,6 +69,9 @@ public class S_Player : MonoBehaviour
         //Input from player's keypresses
 
         Vector3 direction = new Vector3(moveInput.x, 0, moveInput.y);
+
+        //rotate player?
+        transform.rotation = Quaternion.LookRotation(direction);
 
         // Jump (spacebar input)
         if (Keyboard.current.spaceKey.wasPressedThisFrame && (jumpCount < allowedJumps))
