@@ -8,16 +8,19 @@ public class S_Player : MonoBehaviour
     private Rigidbody playerRB;
     public GameObject playerPrefab;
 
-    public ParticleSystem dirtParticle; //TODO: particle play when run
+    public ParticleSystem jumpParticle; //TODO: particle play when run
     public float jumpForce;
-    public float movementForce = 1.5f;
+    public float moveSpeed = 1.5f;
+    public float baseMoveSpeed = 1.5f;
     private PlayerInputActions inputActions;
     private Vector2 moveInput;
     private int jumpCount;
     public int allowedJumps = 2;
     public bool grounded;
     public float stamina = 100;
-    public float boostForce = 1.1f;
+    public float boostSpeed = 10f;
+    public float maxSpeed = 5f;
+    public float gravity = 10f;
 
     public float staminaLoss = 20.0f;
     public int deathCount = 0;
@@ -27,6 +30,8 @@ public class S_Player : MonoBehaviour
     {
         //Get player components
         playerRB = GetComponent<Rigidbody>();
+        var main = jumpParticle.main;
+        main.simulationSpeed = 8f;
 
 
     }
@@ -96,7 +101,6 @@ public class S_Player : MonoBehaviour
         // Jump (spacebar input)
         if (Keyboard.current.spaceKey.wasPressedThisFrame && (jumpCount < allowedJumps))
         {
-            float jumpForceTemp = jumpForce;
             if (grounded == false && jumpCount == 0)
             {
                 jumpCount++;
@@ -104,7 +108,8 @@ public class S_Player : MonoBehaviour
 
             if (jumpCount > 0)
             {
-                jumpForce /= 1.5f;
+                jumpParticle.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                jumpParticle.Play();
             }
             //neutralizing gravity before jump lol
             playerRB.linearVelocity = new Vector3(playerRB.linearVelocity.x, 0f, playerRB.linearVelocity.z);
@@ -112,19 +117,35 @@ public class S_Player : MonoBehaviour
             //apply jumping force!
             playerRB.AddForce(Vector3.up * jumpForce, ForceMode.Impulse); //vertical movement
             jumpCount++;
-            jumpForce = jumpForceTemp;
         }
-
-        //Apply forces to move player
-        //ForceMode changes how the force is applied, instantly? or slowly over time? etc
-        playerRB.AddForce(direction * movementForce, ForceMode.VelocityChange);
 
         //boost!
         if (Keyboard.current.leftShiftKey.isPressed && (stamina > 0))
         {
-            playerRB.AddForce(direction * boostForce, ForceMode.Impulse);
+            moveSpeed = boostSpeed;
             stamina -= staminaLoss * Time.deltaTime;
         }
+        else
+        {
+            moveSpeed = baseMoveSpeed;
+        }
+
+        Vector3 move = direction.normalized * moveSpeed * Time.fixedDeltaTime;
+
+
+        playerRB.MovePosition(playerRB.position + move);
+
+
+        //Apply forces to move player
+        //ForceMode changes how the force is applied, instantly? or slowly over time? etc
+
+
+
+        if (!grounded)
+        {
+            playerRB.AddForce(Vector3.down * gravity); // tweak value
+        }
+
     }
 
     void Respawn()
